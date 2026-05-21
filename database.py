@@ -8,7 +8,7 @@ import mysql.connector
 from mysql.connector import Error
 from fastapi import HTTPException
 
-load_dotenv()
+load_dotenv(override=False)
 
 DB_CONFIG = {
     "host":      os.getenv("DB_HOST",     "localhost"),
