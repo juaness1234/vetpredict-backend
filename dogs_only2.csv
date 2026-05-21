@@ -1,0 +1,76 @@
+Animal_Type,Breed,Age,Gender,Weight,Symptom_1,Symptom_2,Symptom_3,Symptom_4,Duration,Appetite_Loss,Vomiting,Diarrhea,Coughing,Labored_Breathing,Lameness,Skin_Lesions,Nasal_Discharge,Eye_Discharge,Body_Temperature,Heart_Rate,Disease_Prediction
+Dog,Chihuahua,3,Male,2.5,Sneezing,Eye Discharge,Labored Breathing,Lethargy,5 days,Yes,No,No,Yes,No,No,Yes,No,Yes,39.5°C,131,Allergic Rhinitis
+Dog,Golden Retriever,4,Male,30.0,Lameness,Swelling,Appetite Loss,Fever,10 days,Yes,No,No,No,No,Yes,No,No,No,39.5°C,110,Arthritis
+Dog,Border Collie,3,Female,17.0,Coughing,Labored Breathing,Fever,Nasal Discharge,8 days,Yes,No,No,Yes,No,Yes,No,Yes,Yes,39.4°C,129,Bordetella Infection
+Dog,Bulldog,5,Female,22.0,Coughing,Lethargy,Loss of Appetite,Fever,5 days,Yes,Yes,Yes,No,Yes,Yes,Yes,No,Yes,39.3°C,120,Canine Cough
+Dog,Doberman Pinscher,6,Male,40.0,Vomiting,Lethargy,Loss of Appetite,Coughing,5 days,Yes,Yes,No,Yes,No,No,Yes,Yes,No,39.3°C,119,Canine Distemper
+Dog,Chihuahua,2,Male,6.0,Lethargy,Vomiting,Loss of Appetite,Fever,3 days,Yes,Yes,Yes,No,No,Yes,Yes,No,Yes,39.3°C,130,Canine Distemper
+Dog,Beagle,4,Male,20.0,Lethargy,Vomiting,Loss of Appetite,Fever,4 days,Yes,No,Yes,Yes,No,Yes,Yes,Yes,Yes,39.2°C,130,Canine Distemper
+Dog,Golden Retriever,7,Male,30.0,Coughing,Loss of Appetite,Lethargy,Fever,5 days,Yes,Yes,Yes,Yes,Yes,No,Yes,No,No,39.0°C,130,Canine Distemper
+Dog,Rottweiler,5,Female,40.0,Lethargy,Vomiting,Loss of Appetite,Fever,4 days,Yes,No,Yes,Yes,Yes,Yes,No,Yes,No,39.3°C,122,Canine Distemper
+Dog,Poodle,6,Male,25.0,Lethargy,Loss of Appetite,Coughing,Fever,5 days,Yes,Yes,No,Yes,No,No,Yes,Yes,No,39.3°C,110,Canine Distemper
+Dog,Labrador Retriever,11,Male,35.0,Lethargy,Loss of Appetite,Fever,Vomiting,7 days,Yes,No,No,Yes,No,Yes,No,Yes,No,39.3°C,118,Canine Distemper
+Dog,Bulldog,5,Male,23.0,Labored Breathing,Coughing,Nasal Discharge,Appetite Loss,6 days,Yes,No,No,Yes,Yes,No,No,Yes,No,40.0°C,115,Canine Distemper
+Dog,Bulldog,5,Male,23.0,Labored Breathing,Coughing,Nasal Discharge,Appetite Loss,6 days,Yes,No,No,Yes,Yes,No,No,Yes,No,40.0°C,115,Canine Distemper
+Dog,Beagle,2,Female,9.0,Fever,Vomiting,Lethargy,Skin Lesions,3 days,Yes,Yes,No,No,No,Yes,Yes,No,No,39.2°C,132,Canine Distemper
+Dog,Shih Tzu,4,Female,7.0,Coughing,Labored Breathing,Appetite Loss,Lethargy,6 days,Yes,No,Yes,No,Yes,Yes,No,No,No,39.3°C,133,Canine Flu
+Dog,Yorkshire Terrier,4,Male,8.0,Lethargy,Vomiting,Loss of Appetite,Fever,3 days,Yes,Yes,No,Yes,Yes,No,Yes,No,Yes,39.2°C,100,Canine Heartworm Disease
+Dog,German Shepherd,4,Male,32.0,Lethargy,Vomiting,Loss of Appetite,Fever,3 days,Yes,Yes,No,Yes,Yes,Yes,Yes,No,No,39.1°C,130,Canine Hepatitis
+Dog,Akita,6,Male,35.0,Lethargy,Loss of Appetite,Fever,Vomiting,6 days,Yes,No,Yes,No,Yes,Yes,No,No,Yes,39.5°C,130,Canine Hepatitis
+Dog,Shih Tzu,8,Female,8.0,Lethargy,Vomiting,Diarrhea,Loss of Appetite,5 days,Yes,No,Yes,Yes,No,No,No,No,Yes,39.0°C,130,Canine Hepatitis
+Dog,Boxer,3,Female,30.0,Lethargy,Vomiting,Loss of Appetite,Fever,4 days,Yes,Yes,Yes,Yes,Yes,No,Yes,No,Yes,39.3°C,120,Canine Infectious Hepatitis
+Dog,Beagle,4,Female,15.0,Coughing,Loss of Appetite,Lethargy,Fever,4 days,Yes,No,Yes,Yes,No,No,Yes,Yes,No,39.2°C,125,Canine Influenza
+Dog,Cocker Spaniel,5,Female,20.0,Vomiting,Lethargy,Loss of Appetite,Fever,4 days,Yes,Yes,No,No,Yes,No,No,Yes,No,39.2°C,123,Canine Leptospirosis
+Dog,Beagle,2,Male,10.0,Lethargy,Vomiting,Loss of Appetite,Fever,4 days,Yes,Yes,Yes,Yes,No,Yes,Yes,No,Yes,39.4°C,120,Canine Leptospirosis
+Dog,Boxer,6,Female,30.0,Lethargy,Vomiting,Loss of Appetite,Fever,4 days,Yes,Yes,No,Yes,Yes,Yes,Yes,No,Yes,39.1°C,115,Canine Leptospirosis
+Dog,Golden Retriever,7,Male,33.0,Lethargy,Vomiting,Loss of Appetite,Fever,5 days,Yes,Yes,Yes,No,Yes,Yes,No,No,Yes,39.2°C,118,Canine Leptospirosis
+Dog,Bulldog,3,Female,25.0,Lethargy,Vomiting,Loss of Appetite,Fever,4 days,Yes,No,Yes,Yes,Yes,Yes,Yes,No,Yes,39.2°C,125,Canine Leptospirosis
+Dog,German Shepherd,4,Female,45.0,Lethargy,Loss of Appetite,Coughing,Fever,5 days,Yes,No,Yes,Yes,No,Yes,Yes,No,No,39.4°C,120,Canine Parvovirus
+Dog,Chihuahua,3,Male,6.0,Lethargy,Vomiting,Loss of Appetite,Fever,2 days,Yes,Yes,No,Yes,Yes,No,Yes,Yes,No,39.0°C,118,Canine Parvovirus
+Dog,Chihuahua,4,Female,3.5,Lethargy,Vomiting,Diarrhea,Coughing,2 days,Yes,Yes,Yes,Yes,No,No,No,No,No,39.1°C,130,Canine Parvovirus
+Dog,Golden Retriever,5,Male,40.0,Vomiting,Loss of Appetite,Lethargy,Fever,5 days,Yes,Yes,No,Yes,No,Yes,Yes,No,No,39.2°C,130,Canine Parvovirus
+Dog,Rottweiler,5,Female,42.0,Lethargy,Vomiting,Loss of Appetite,Coughing,4 days,Yes,Yes,No,Yes,No,Yes,Yes,No,No,39.2°C,120,Canine Parvovirus
+Dog,Golden Retriever,7,Male,30.0,Vomiting,Diarrhea,Loss of Appetite,Lethargy,6 days,Yes,No,Yes,Yes,No,No,Yes,No,No,39.5°C,118,Canine Parvovirus
+Dog,Chihuahua,4,Female,5.0,Lethargy,Vomiting,Loss of Appetite,Fever,3 days,Yes,Yes,No,Yes,Yes,Yes,Yes,No,No,39.1°C,110,Canine Parvovirus
+Dog,Dachshund,3,Female,12.0,Lethargy,Vomiting,Loss of Appetite,Fever,4 days,Yes,Yes,No,Yes,No,Yes,Yes,Yes,No,39.0°C,115,Canine Parvovirus
+Dog,Labrador,4,Male,30.0,Vomiting,Loss of Appetite,Lethargy,Fever,5 days,Yes,Yes,No,Yes,No,No,No,Yes,No,39.2°C,100,Canine Parvovirus
+Dog,Husky,9,Male,25.0,Lethargy,Vomiting,Diarrhea,Loss of Appetite,4 days,Yes,Yes,No,Yes,Yes,No,No,No,No,39.1°C,124,Canine Parvovirus
+Dog,Golden Retriever,5,Male,35.0,Coughing,Lethargy,Loss of Appetite,Fever,4 days,Yes,Yes,No,Yes,No,No,No,Yes,No,39.2°C,110,Canine Parvovirus
+Dog,Poodle,7,Female,15.0,Lethargy,Vomiting,Loss of Appetite,Diarrhea,4 days,Yes,No,Yes,No,No,Yes,No,Yes,No,39.1°C,125,Canine Parvovirus
+Dog,Dachshund,7,Male,5.5,Coughing,Labored Breathing,Lethargy,Appetite Loss,2 weeks,Yes,No,No,Yes,Yes,No,No,No,No,39.5°C,120,Chronic Bronchitis
+Dog,Beagle,4,Female,25.0,Lethargy,Vomiting,Loss of Appetite,Fever,4 days,Yes,Yes,No,Yes,Yes,Yes,No,Yes,Yes,39.2°C,120,Distemper
+Dog,Cocker Spaniel,2,Female,10.0,Lethargy,Vomiting,Loss of Appetite,Fever,3 days,Yes,No,Yes,Yes,Yes,No,Yes,Yes,Yes,39.0°C,125,Distemper
+Dog,Chihuahua,9,Male,2.0,Vomiting,Loss of Appetite,Diarrhea,Lethargy,2 days,Yes,Yes,No,No,No,Yes,No,No,Yes,39.1°C,128,Gastroenteritis
+Dog,Beagle,1,Male,10.0,Diarrhea,Vomiting,Lethargy,Appetite Loss,2 days,Yes,Yes,Yes,No,No,No,No,No,No,39.2°C,130,Gastroenteritis
+Dog,Dachshund,7,Female,8.0,Vomiting,Diarrhea,Weight Loss,Appetite Loss,3 days,Yes,Yes,No,Yes,Yes,No,No,Yes,Yes,39.2°C,120,Gastroenteritis
+Dog,Boxer,8,Female,27.0,Vomiting,Lethargy,Diarrhea,Loss of Appetite,4 days,Yes,Yes,No,No,Yes,No,No,Yes,No,39.2°C,131,Gastroenteritis
+Dog,Golden Retriever,5,Male,32.0,Vomiting,Diarrhea,Loss of Appetite,Lethargy,3 days,Yes,No,Yes,No,Yes,No,No,No,Yes,39.2°C,130,Gastroenteritis
+Dog,Bulldog,5,Male,22.0,Vomiting,Appetite Loss,Fever,Diarrhea,3 days,Yes,Yes,No,No,Yes,Yes,No,No,No,39.6°C,138,Gastroenteritis
+Dog,Beagle,1,Male,10.0,Diarrhea,Vomiting,Lethargy,Appetite Loss,2 days,Yes,Yes,Yes,No,No,No,No,No,No,39.2°C,130,Gastroenteritis
+Dog,Beagle,5,Male,10.0,Vomiting,Diarrhea,Loss of Appetite,Fever,3 days,Yes,Yes,No,No,No,Yes,No,Yes,No,39.2°C,132,Gastroenteritis
+Dog,German Shepherd,5,Male,30.0,Lethargy,Labored Breathing,Coughing,Appetite Loss,6 days,Yes,No,No,Yes,Yes,No,No,No,No,39.6°C,125,Heartworm Disease
+Dog,Rottweiler,7,Male,35.0,Coughing,Loss of Appetite,Lethargy,Fever,4 days,Yes,No,No,Yes,Yes,Yes,Yes,Yes,Yes,39.3°C,110,Kennel Cough
+Dog,Poodle,3,Female,28.0,Coughing,Loss of Appetite,Lethargy,Fever,5 days,Yes,Yes,No,Yes,Yes,Yes,Yes,No,Yes,39.1°C,120,Kennel Cough
+Dog,Bulldog,5,Female,18.0,Lethargy,Coughing,Loss of Appetite,Fever,5 days,Yes,No,No,Yes,Yes,Yes,No,Yes,No,39.3°C,115,Kennel Cough
+Dog,Poodle,2,Female,12.0,Lethargy,Appetite Loss,Coughing,Vomiting,4 days,Yes,Yes,No,Yes,No,No,No,No,No,39.4°C,115,Kennel Cough
+Dog,Beagle,6,Male,13.0,Coughing,Labored Breathing,Nasal Discharge,Fever,4 days,Yes,No,No,Yes,Yes,Yes,No,Yes,No,39.4°C,127,Kennel Cough
+Dog,Poodle,8,Male,15.0,Coughing,Labored Breathing,Lethargy,Appetite Loss,1 week,Yes,No,Yes,No,Yes,No,No,No,Yes,39.3°C,126,Kennel Cough
+Dog,Beagle,5,Male,25.0,Coughing,Loss of Appetite,Lethargy,Fever,5 days,Yes,Yes,No,No,Yes,Yes,Yes,No,Yes,39.2°C,120,Kennel Cough
+Dog,German Shepherd,6,Female,30.0,Coughing,Labored Breathing,Lethargy,Loss of Appetite,6 days,Yes,No,Yes,No,Yes,No,No,No,Yes,39.4°C,125,Kennel Cough
+Dog,Poodle,2,Female,8.0,Coughing,Nasal Discharge,Appetite Loss,Lethargy,4 days,Yes,No,No,Yes,No,No,No,Yes,No,39.1°C,125,Kennel Cough
+Dog,Pit Bull,4,Female,35.0,Lethargy,Vomiting,Loss of Appetite,Coughing,3 days,Yes,Yes,No,Yes,No,Yes,No,No,No,39.0°C,125,Leptospirosis
+Dog,Rottweiler,3,Female,30.0,Lethargy,Vomiting,Loss of Appetite,Fever,5 days,Yes,Yes,Yes,Yes,Yes,Yes,Yes,Yes,Yes,39.2°C,120,Leptospirosis
+Dog,German Shepherd,3,Female,30.0,Lameness,Fever,Skin Lesions,Lethargy,7 days,Yes,No,No,No,No,Yes,Yes,No,No,39.3°C,110,Lyme Disease
+Dog,German Shepherd,3,Female,30.0,Lameness,Fever,Skin Lesions,Lethargy,7 days,Yes,No,No,No,No,Yes,Yes,No,No,39.3°C,110,Lyme Disease
+Dog,Corgi,5,Male,11.0,Vomiting,Diarrhea,Lethargy,Weight Loss,3 days,Yes,No,Yes,No,No,Yes,No,Yes,No,39.2°C,134,Pancreatitis
+Dog,Dalmatian,8,Female,20.0,Vomiting,Diarrhea,Weight Loss,Dehydration,4 days,Yes,No,Yes,No,Yes,No,No,Yes,No,39.0°C,120,Pancreatitis
+Dog,Poodle,3,Female,20.0,Vomiting,Diarrhea,Lethargy,Fever,4 days,Yes,No,Yes,No,Yes,Yes,Yes,No,Yes,39.0°C,120,Parvovirus
+Dog,Golden Retriever,4,Female,28.0,Lethargy,Vomiting,Diarrhea,Loss of Appetite,5 days,Yes,No,Yes,Yes,No,Yes,No,No,No,39.2°C,130,Parvovirus
+Dog,Labrador,4,Male,25.0,Fever,Lethargy,Appetite Loss,Vomiting,3 days,Yes,Yes,No,No,No,No,No,No,No,39.5°C,120,Parvovirus
+Dog,Chihuahua,1,Male,3.0,Vomiting,Diarrhea,Lethargy,Fever,3 days,Yes,Yes,Yes,No,No,No,No,No,No,39.4°C,135,Parvovirus
+Dog,Shih Tzu,4,Male,8.0,Lethargy,Vomiting,Loss of Appetite,Fever,4 days,Yes,Yes,Yes,Yes,No,No,Yes,No,Yes,39.2°C,115,Parvovirus
+Dog,Dachshund,4,Female,9.0,Lethargy,Vomiting,Loss of Appetite,Dehydration,3 days,Yes,No,Yes,No,Yes,Yes,No,No,No,39.0°C,132,Parvovirus
+Dog,Chihuahua,3,Male,6.0,Lethargy,Vomiting,Loss of Appetite,Fever,5 days,Yes,No,No,Yes,Yes,Yes,Yes,Yes,No,39.3°C,135,Parvovirus
+Dog,Rottweiler,7,Female,35.0,Vomiting,Diarrhea,Loss of Appetite,Dehydration,3 days,Yes,No,Yes,No,Yes,No,No,No,Yes,39.0°C,127,Parvovirus
+Dog,Labrador,4,Male,25.0,Fever,Lethargy,Appetite Loss,Vomiting,3 days,Yes,Yes,No,No,No,No,No,No,No,39.5°C,120,Parvovirus
+Dog,Siberian Husky,6,Male,28.0,Lameness,Fever,Skin Lesions,Lethargy,8 days,Yes,No,No,No,No,Yes,Yes,No,No,39.3°C,120,Tick-Borne Disease
