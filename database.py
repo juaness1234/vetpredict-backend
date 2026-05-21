@@ -22,11 +22,12 @@ DB_CONFIG = {
 
 
 def get_connection():
-    """Retorna una conexión nueva a MySQL. Lanza HTTP 503 si falla."""
     try:
         conn = mysql.connector.connect(**DB_CONFIG)
         return conn
     except Error as e:
+        print(f"[DB ERROR] {e}")
+        print(f"[DB CONFIG] host={DB_CONFIG['host']} port={DB_CONFIG['port']} user={DB_CONFIG['user']} db={DB_CONFIG['database']}")
         raise HTTPException(
             status_code=503,
             detail=f"No se pudo conectar a la base de datos: {str(e)}"
