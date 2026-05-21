@@ -16,7 +16,7 @@ from dotenv import load_dotenv
 
 from database import query_one, query_all, execute
 from auth import hash_password, verify_password, create_token, get_current_user
-from modelo import get_predictor
+from modelo_v5 import get_predictor
 
 load_dotenv()
 
