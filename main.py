@@ -1,6 +1,5 @@
 """
-main.py — VetPredict API v5
-Árbol de decisión secuencial + recomendaciones médicas
+main.py — VetPredict API v4 — MÁXIMA SEGURIDAD
 """
 import os, json, logging, hashlib, datetime
 from typing import Optional
@@ -17,9 +16,9 @@ from dotenv import load_dotenv
 
 from database import query_one, query_all, execute
 from auth import hash_password, verify_password, create_token, get_current_user
-from modelo_v5 import get_predictor
+from modelo import get_predictor
 
-load_dotenv(override=False)
+load_dotenv()
 
 # ── Logging ───────────────────────────────────────────────────
 log_file = os.getenv("LOG_FILE", "logs/vetpredict_security.log")
@@ -32,20 +31,19 @@ logging.basicConfig(
         logging.StreamHandler(),
     ],
 )
-logger = logging.getLogger("vetpredict")
+logger = logging.getLogger("vetpredict.security")
 
+# ── Rate limiter ──────────────────────────────────────────────
 limiter = Limiter(key_func=get_remote_address, default_limits=["200/minute"])
 
-app = FastAPI(
-    title="VetPredict API",
-    version="5.0.0",
-    docs_url="/docs",
-    redoc_url="/redoc"
-)
-    
+# ── App ───────────────────────────────────────────────────────
+app = FastAPI(title="VetPredict API", version="4.0.0",
+    docs_url="/docs" if os.getenv("ENV") == "development" else None,
+    redoc_url=None)
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
+# ── CORS restringido ──────────────────────────────────────────
 _origins = [o.strip() for o in os.getenv(
     "ALLOWED_ORIGINS",
     "http://10.0.2.2:8000,http://localhost:8000,http://127.0.0.1:8000"
@@ -54,6 +52,7 @@ app.add_middleware(CORSMiddleware, allow_origins=_origins,
     allow_credentials=True, allow_methods=["GET","POST","PUT","DELETE"],
     allow_headers=["Authorization","Content-Type"])
 
+# ── Headers de seguridad ──────────────────────────────────────
 @app.middleware("http")
 async def security_headers(request: Request, call_next):
     response = await call_next(request)
@@ -63,50 +62,52 @@ async def security_headers(request: Request, call_next):
     response.headers["Cache-Control"]          = "no-store"
     return response
 
+# ── Log de peticiones ─────────────────────────────────────────
 @app.middleware("http")
 async def log_requests(request: Request, call_next):
-    response = await call_next(request)
     ip = get_remote_address(request)
+    response = await call_next(request)
     if response.status_code >= 400:
         logger.warning(f"[{response.status_code}] {request.method} {request.url.path} IP:{ip}")
     return response
 
+# ── Token blacklist ───────────────────────────────────────────
 _bearer = HTTPBearer()
 
-def _token_hash(token): 
-    import hashlib
+def _token_hash(token: str) -> str:
     return hashlib.sha256(token.encode()).hexdigest()
 
-def _revoke_token(token, user_id, motivo="logout"):
+def _revoke_token(token: str, user_id: int, motivo: str = "logout"):
     expira = datetime.datetime.utcnow() + datetime.timedelta(hours=2)
     try:
         execute("INSERT IGNORE INTO token_blacklist (token_hash,usuario_id,motivo,expira_en) VALUES (%s,%s,%s,%s)",
             (_token_hash(token), user_id, motivo, expira))
-    except: pass
+    except Exception: pass
 
-def _is_revoked(token):
+def _is_revoked(token: str) -> bool:
     try:
         row = query_one("SELECT id FROM token_blacklist WHERE token_hash=%s AND expira_en > NOW()",
             (_token_hash(token),))
         return row is not None
-    except: return False
+    except Exception: return False
 
-def get_secure_user(creds: HTTPAuthorizationCredentials = Depends(_bearer)):
+def get_secure_user(creds: HTTPAuthorizationCredentials = Depends(_bearer)) -> dict:
     if _is_revoked(creds.credentials):
         raise HTTPException(401, "Token revocado. Inicia sesión nuevamente.")
     return get_current_user(creds)
 
-def serial(row):
+# ── Helper ────────────────────────────────────────────────────
+def serial(row: dict) -> dict:
     for k, v in row.items():
         if isinstance(v, (datetime.datetime, datetime.date)):
             row[k] = v.isoformat()
     return row
 
-def get_ip(r):
+def get_ip(r: Request) -> str:
     fwd = r.headers.get("X-Forwarded-For")
     return fwd.split(",")[0].strip() if fwd else (r.client.host if r.client else "unknown")
 
-# ── Schemas ───────────────────────────────────────────────────
+# ── Schemas con validación estricta ──────────────────────────
 class RegisterIn(BaseModel):
     nombre:   str = Field(..., min_length=2, max_length=100)
     apellido: str = Field(..., min_length=2, max_length=100)
@@ -137,14 +138,11 @@ class DiagnosticoIn(BaseModel):
     frecuencia_cardiaca: Optional[int]   = Field(None, ge=20, le=300)
     peso_momento:        Optional[float] = Field(None, ge=0.1, le=200)
     duracion_sintomas:   Optional[str]   = Field(None, max_length=100)
-
-class RespuestasIn(BaseModel):
-    """Flujo secuencial: envía respuestas acumuladas y recibe siguiente pregunta o diagnóstico."""
-    mascota_id:          int  = Field(..., ge=1)
-    respuestas:          dict = Field(default={})
-    temperatura:         Optional[float] = Field(None, ge=35.0, le=43.0)
-    frecuencia_cardiaca: Optional[int]   = Field(None, ge=20, le=300)
-    peso_momento:        Optional[float] = Field(None, ge=0.1, le=200)
+    @field_validator("sintoma_ids")
+    @classmethod
+    def valid_sintomas(cls, v):
+        if not all(1 <= s <= 12 for s in v): raise ValueError("IDs inválidos (1-12)")
+        return list(set(v))
 
 class SeguimientoIn(BaseModel):
     consulta_id:         int       = Field(..., ge=1)
@@ -172,14 +170,17 @@ class ChangePasswordIn(BaseModel):
 @app.on_event("startup")
 async def startup():
     get_predictor()
-    logger.info("VetPredict API v5 iniciada — Árbol secuencial + Recomendaciones activas")
+    logger.info("VetPredict API v4 iniciada — Seguridad MÁXIMA activa")
+    logger.info(f"CORS: {_origins}")
 
+# ── Health ────────────────────────────────────────────────────
 @app.get("/")
-def root(): return {"status":"ok","api":"VetPredict","version":"5.0.0"}
+def root(): return {"status":"ok","api":"VetPredict","version":"4.0.0"}
 
 @app.get("/health")
 def health():
-    db = ml = True
+    db = True
+    ml = True
     try: query_one("SELECT 1")
     except: db = False
     try: get_predictor()
@@ -192,6 +193,7 @@ def health():
 async def register(request: Request, body: RegisterIn):
     ip = get_ip(request)
     if query_one("SELECT id FROM usuarios WHERE email=%s", (body.email,)):
+        logger.warning(f"[REGISTER] Duplicado: {body.email} IP={ip}")
         raise HTTPException(400, "Este correo ya está registrado.")
     uid = execute("INSERT INTO usuarios (nombre,apellido,email,password_hash) VALUES (%s,%s,%s,%s)",
         (body.nombre.strip(), body.apellido.strip(), body.email.lower().strip(), hash_password(body.password)))
@@ -217,6 +219,7 @@ async def login(request: Request, body: LoginIn):
             i = user["intentos_fallidos"] + 1
             b = datetime.datetime.utcnow() + datetime.timedelta(minutes=15) if i >= 5 else None
             execute("UPDATE usuarios SET intentos_fallidos=%s,bloqueado_hasta=%s WHERE id=%s", (i,b,user["id"]))
+            if b: logger.warning(f"[LOGIN] Bloqueado: {email} IP={ip}")
         logger.warning(f"[LOGIN] Fallo: {email} IP={ip}")
         raise HTTPException(401, "Correo o contraseña incorrectos.")
     execute("UPDATE usuarios SET intentos_fallidos=0,bloqueado_hasta=NULL WHERE id=%s", (user["id"],))
@@ -232,6 +235,7 @@ async def me(current=Depends(get_secure_user)): return current
 @app.post("/api/auth/logout")
 async def logout(request: Request, creds=Depends(_bearer), current=Depends(get_secure_user)):
     _revoke_token(creds.credentials, current["id"], "logout")
+    logger.info(f"[LOGOUT] ID={current['id']} IP={get_ip(request)}")
     return {"message": "Sesión cerrada correctamente."}
 
 @app.put("/api/auth/password")
@@ -239,9 +243,11 @@ async def logout(request: Request, creds=Depends(_bearer), current=Depends(get_s
 async def change_password(request: Request, body: ChangePasswordIn, creds=Depends(_bearer), current=Depends(get_secure_user)):
     user = query_one("SELECT * FROM usuarios WHERE id=%s", (current["id"],))
     if not verify_password(body.password_actual, user["password_hash"]):
+        logger.warning(f"[CHANGE_PWD] Fallo ID={current['id']} IP={get_ip(request)}")
         raise HTTPException(401, "Contraseña actual incorrecta.")
     execute("UPDATE usuarios SET password_hash=%s WHERE id=%s", (hash_password(body.password_nuevo), current["id"]))
     _revoke_token(creds.credentials, current["id"], "password_change")
+    logger.info(f"[CHANGE_PWD] OK ID={current['id']} IP={get_ip(request)}")
     return {"message": "Contraseña actualizada. Inicia sesión nuevamente."}
 
 @app.delete("/api/auth/cuenta")
@@ -249,17 +255,18 @@ async def change_password(request: Request, body: ChangePasswordIn, creds=Depend
 async def delete_account(request: Request, body: DeleteAccountIn, creds=Depends(_bearer), current=Depends(get_secure_user)):
     user = query_one("SELECT * FROM usuarios WHERE id=%s", (current["id"],))
     if not verify_password(body.password, user["password_hash"]):
+        logger.warning(f"[DELETE_ACCOUNT] Fallo ID={current['id']} IP={get_ip(request)}")
         raise HTTPException(401, "Contraseña incorrecta.")
     _revoke_token(creds.credentials, current["id"], "account_deleted")
     execute("DELETE FROM usuarios WHERE id=%s", (current["id"],))
-    logger.warning(f"[DELETE_ACCOUNT] ID={current['id']} email={current['email']}")
-    return {"message": "Tu cuenta ha sido eliminada. 🐾"}
+    logger.warning(f"[DELETE_ACCOUNT] Eliminada ID={current['id']} email={current['email']} motivo='{body.motivo}' IP={get_ip(request)}")
+    return {"message": "Tu cuenta ha sido eliminada. Lamentamos verte partir. 🐾"}
 
 @app.get("/api/perfil")
 async def get_perfil(current=Depends(get_secure_user)):
     uid = current["id"]
-    tm  = query_one("SELECT COUNT(*) AS t FROM mascotas WHERE usuario_id=%s AND activa=1", (uid,))
-    tc  = query_one("SELECT COUNT(*) AS t FROM consultas WHERE usuario_id=%s", (uid,))
+    tm = query_one("SELECT COUNT(*) AS t FROM mascotas WHERE usuario_id=%s AND activa=1", (uid,))
+    tc = query_one("SELECT COUNT(*) AS t FROM consultas WHERE usuario_id=%s", (uid,))
     ult = query_one("SELECT creado_en FROM consultas WHERE usuario_id=%s ORDER BY creado_en DESC LIMIT 1", (uid,))
     return {"id":uid,"nombre":current["nombre"],"apellido":current["apellido"],"email":current["email"],
             "total_mascotas":tm["t"] if tm else 0,"total_consultas":tc["t"] if tc else 0,
@@ -280,7 +287,7 @@ async def obtener(mid: int, current=Depends(get_secure_user)):
 async def crear(body: MascotaIn, request: Request, current=Depends(get_secure_user)):
     mid = execute("INSERT INTO mascotas (usuario_id,nombre,raza,edad,genero,peso) VALUES (%s,%s,%s,%s,%s,%s)",
         (current["id"],body.nombre.strip(),body.raza,body.edad,body.genero,body.peso))
-    logger.info(f"[MASCOTA] Creada ID={mid} usuario={current['id']}")
+    logger.info(f"[MASCOTA] Creada ID={mid} nombre='{body.nombre}' usuario={current['id']} IP={get_ip(request)}")
     return serial(query_one("SELECT * FROM mascotas WHERE id=%s", (mid,)))
 
 @app.put("/api/mascotas/{mid}")
@@ -296,90 +303,23 @@ async def eliminar(mid: int, request: Request, current=Depends(get_secure_user))
     ex = query_one("SELECT id,nombre FROM mascotas WHERE id=%s AND usuario_id=%s", (mid, current["id"]))
     if not ex: raise HTTPException(404, "Mascota no encontrada.")
     execute("DELETE FROM mascotas WHERE id=%s", (mid,))
-    logger.info(f"[MASCOTA] Eliminada ID={mid} nombre='{ex['nombre']}' usuario={current['id']}")
+    logger.info(f"[MASCOTA] Eliminada ID={mid} nombre='{ex['nombre']}' usuario={current['id']} IP={get_ip(request)}")
     return {"message":f"{ex['nombre']} eliminado.","eliminado":True}
 
-# ── Diagnóstico v5 — DOS modos ────────────────────────────────
-
-@app.post("/api/diagnostico/siguiente-pregunta")
-async def siguiente_pregunta(body: RespuestasIn, current=Depends(get_secure_user)):
-    """
-    MODO SECUENCIAL — Como el árbol del ejemplo.
-    El frontend envía las respuestas acumuladas (sí/no por síntoma).
-    El backend responde con la siguiente pregunta O con el diagnóstico final.
-    """
-    mascota = query_one(
-        "SELECT * FROM mascotas WHERE id=%s AND usuario_id=%s AND activa=1",
-        (body.mascota_id, current["id"])
-    )
-    if not mascota: raise HTTPException(404, "Mascota no encontrada.")
-
-    predictor = get_predictor()
-    result = predictor.get_next_question(body.respuestas)
-
-    if result["tipo"] == "diagnostico":
-        # Guardar en BD
-        sintoma_ids = [
-            sid for sid, nombre in predictor.SINTOMA_ID_MAP.items()
-            if body.respuestas.get(nombre, False)
-        ] if hasattr(predictor, 'SINTOMA_ID_MAP') else []
-
-        from modelo_v5 import SINTOMA_ID_MAP as SIM
-        sintoma_ids = [sid for sid, nombre in SIM.items() if body.respuestas.get(nombre, False)]
-
-        cid = execute(
-            "INSERT INTO consultas (mascota_id,usuario_id,temperatura,frecuencia_cardiaca,"
-            "peso_momento,enfermedad_predicha,nivel_riesgo,confianza,sintomas_json,resultado_json) "
-            "VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)",
-            (body.mascota_id, current["id"],
-             body.temperatura, body.frecuencia_cardiaca, body.peso_momento,
-             result["enfermedad"], result["nivel_riesgo"], result["confianza"],
-             json.dumps(sintoma_ids), json.dumps(result))
-        )
-        result["consulta_id"] = cid
-        result["mascota"]     = serial(mascota)
-        logger.info(f"[DIAG] Secuencial ID={cid} resultado='{result['enfermedad']}' usuario={current['id']}")
-
-    return result
-
-
+# ── Diagnóstico ───────────────────────────────────────────────
 @app.post("/api/diagnostico")
 @limiter.limit("30/minute")
 async def diagnosticar(request: Request, body: DiagnosticoIn, current=Depends(get_secure_user)):
-    """
-    MODO DIRECTO — El frontend envía todos los síntomas marcados de una vez.
-    Útil para compatibilidad con versión anterior.
-    """
-    mascota = query_one(
-        "SELECT * FROM mascotas WHERE id=%s AND usuario_id=%s AND activa=1",
-        (body.mascota_id, current["id"])
-    )
-    if not mascota: raise HTTPException(404, "Mascota no encontrada.")
-
-    sintoma_ids = list(set(body.sintoma_ids))
-    if not all(1 <= s <= 12 for s in sintoma_ids):
-        raise HTTPException(400, "IDs de síntomas inválidos (1-12)")
-
-    r = get_predictor().predict(
-        sintoma_ids, body.temperatura or 38.5,
-        body.frecuencia_cardiaca or 90,
-        body.peso_momento or float(mascota.get("peso") or 15),
-        int(mascota.get("edad") or 3)
-    )
-
-    cid = execute(
-        "INSERT INTO consultas (mascota_id,usuario_id,temperatura,frecuencia_cardiaca,"
-        "peso_momento,duracion_sintomas,enfermedad_predicha,nivel_riesgo,confianza,"
-        "sintomas_json,resultado_json) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)",
-        (body.mascota_id, current["id"], body.temperatura, body.frecuencia_cardiaca,
-         body.peso_momento, body.duracion_sintomas, r["enfermedad"], r["nivel_riesgo"],
-         r["confianza"], json.dumps(sintoma_ids), json.dumps(r))
-    )
-    logger.info(f"[DIAG] Directo ID={cid} resultado='{r['enfermedad']}' usuario={current['id']}")
+    m = query_one("SELECT * FROM mascotas WHERE id=%s AND usuario_id=%s AND activa=1", (body.mascota_id, current["id"]))
+    if not m: raise HTTPException(404, "Mascota no encontrada.")
+    r = get_predictor().predict(body.sintoma_ids, body.temperatura or 38.5, body.frecuencia_cardiaca or 90,
+        body.peso_momento or float(m.get("peso") or 15), int(m.get("edad") or 3))
+    cid = execute("INSERT INTO consultas (mascota_id,usuario_id,temperatura,frecuencia_cardiaca,peso_momento,duracion_sintomas,enfermedad_predicha,nivel_riesgo,confianza,sintomas_json,resultado_json) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)",
+        (body.mascota_id,current["id"],body.temperatura,body.frecuencia_cardiaca,body.peso_momento,
+         body.duracion_sintomas,r["enfermedad"],r["nivel_riesgo"],r["confianza"],json.dumps(body.sintoma_ids),json.dumps(r)))
+    logger.info(f"[DIAGNOSTICO] ID={cid} resultado='{r['enfermedad']}' riesgo={r['nivel_riesgo']} usuario={current['id']}")
     return {"consulta_id":cid,"enfermedad":r["enfermedad"],"nivel_riesgo":r["nivel_riesgo"],
-            "confianza":r["confianza"],"probabilidades":r["probabilidades"],
-            "sintomas_usados":r["sintomas_usados"],"recomendacion":r["recomendacion"],
-            "mascota":serial(mascota)}
+            "confianza":r["confianza"],"probabilidades":r["probabilidades"],"sintomas_usados":r["sintomas_usados"],"mascota":serial(m)}
 
 # ── Historial ─────────────────────────────────────────────────
 @app.get("/api/historial")
@@ -399,10 +339,6 @@ async def detalle(cid: int, current=Depends(get_secure_user)):
     except: row["resultado"] = {}
     try: row["sintoma_ids"] = json.loads(row.get("sintomas_json","[]") or "[]")
     except: row["sintoma_ids"] = []
-    # Incluir recomendación en el detalle
-    from modelo_v5 import RECOMENDACIONES, RECOMENDACION_GENERICA
-    enf = row.get("enfermedad_predicha","")
-    row["recomendacion"] = RECOMENDACIONES.get(enf, RECOMENDACION_GENERICA)
     row["seguimientos"] = [serial(s) for s in query_all("SELECT * FROM seguimientos WHERE consulta_id=%s ORDER BY creado_en ASC", (cid,))]
     return row
 
@@ -413,7 +349,7 @@ async def crear_seg(body: SeguimientoIn, current=Depends(get_secure_user)):
         raise HTTPException(404, "Consulta no encontrada.")
     ne = nc = None
     if body.sintoma_ids:
-        res = get_predictor().predict(list(set(body.sintoma_ids)))
+        res = get_predictor().predict(body.sintoma_ids)
         ne, nc = res["enfermedad"], res["confianza"]
     sid = execute("INSERT INTO seguimientos (consulta_id,usuario_id,estado_general,temperatura,frecuencia_cardiaca,sintomas_json,enfermedad_predicha,confianza,notas) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s)",
         (body.consulta_id,current["id"],body.estado_general,body.temperatura,body.frecuencia_cardiaca,json.dumps(body.sintoma_ids),ne,nc,body.notas))
