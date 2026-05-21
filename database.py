@@ -9,15 +9,15 @@ from mysql.connector import Error
 from fastapi import HTTPException
 
 load_dotenv()
-
 DB_CONFIG = {
-    "host":      os.getenv("DB_HOST",     "localhost"),
-    "port": int(os.getenv("DB_PORT") or "3306"),
-    "user":      os.getenv("DB_USER",     "root"),
-    "password":  os.getenv("DB_PASSWORD", ""),
-    "database":  os.getenv("DB_NAME",     "vetpredict"),
-    "charset":   "utf8mb4",
+    "host": os.getenv("DB_HOST") or os.getenv("MYSQLHOST", "localhost"),
+    "port": int(os.getenv("DB_PORT") or os.getenv("MYSQLPORT", "3306")),
+    "user": os.getenv("DB_USER") or os.getenv("MYSQLUSER", "root"),
+    "password": os.getenv("DB_PASSWORD") or os.getenv("MYSQLPASSWORD", ""),
+    "database": os.getenv("DB_NAME") or os.getenv("MYSQLDATABASE", "vetpredict"),
+    "charset": "utf8mb4",
     "autocommit": False,
+
 }
 
 
