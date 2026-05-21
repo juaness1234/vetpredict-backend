@@ -179,13 +179,44 @@ def root(): return {"status":"ok","api":"VetPredict","version":"4.0.0"}
 
 @app.get("/health")
 def health():
-    db = True
-    ml = True
-    try: query_one("SELECT 1")
-    except: db = False
-    try: get_predictor()
-    except: ml = False
-    return {"database":"ok" if db else "error","modelo_ml":"ok" if ml else "error"}
+    import traceback
+    import os
+    
+    # Verificar modelo ML
+    ml_status = "ok"
+    try:
+        get_predictor()
+    except Exception as e:
+        ml_status = f"error: {str(e)}"
+        logger.error(f"ML error: {traceback.format_exc()}")
+    
+    # Verificar base de datos
+    db_status = "ok"
+    db_error = None
+    try:
+        # Mostrar qué configuración está usando
+        logger.info(f"Intentando conectar a DB: host={os.getenv('DB_HOST', 'localhost')}, db={os.getenv('DB_NAME', 'vetpredict')}")
+        query_one("SELECT 1")
+    except Exception as e:
+        db_status = "error"
+        db_error = str(e)
+        logger.error(f"DB error: {traceback.format_exc()}")
+    
+    # Verificar variables de entorno (sin mostrar passwords)
+    db_vars = {
+        "DB_HOST": os.getenv("DB_HOST"),
+        "DB_PORT": os.getenv("DB_PORT"),
+        "DB_USER": os.getenv("DB_USER"),
+        "DB_NAME": os.getenv("DB_NAME"),
+        "DB_PASSWORD_SET": "yes" if os.getenv("DB_PASSWORD") else "no"
+    }
+    
+    return {
+        "database": db_status,
+        "modelo_ml": ml_status,
+        "db_error": db_error,
+        "db_config_used": db_vars
+    }
 
 # ── Auth ──────────────────────────────────────────────────────
 @app.post("/api/auth/register", status_code=201)
