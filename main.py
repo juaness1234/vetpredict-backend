@@ -179,8 +179,10 @@ def root(): return {"status":"ok","api":"VetPredict","version":"4.0.0"}
 
 @app.get("/health")
 def health():
-    import traceback
     import os
+    import traceback
+    import mysql.connector
+    from database import DB_CONFIG
     
     # Verificar modelo ML
     ml_status = "ok"
@@ -188,34 +190,32 @@ def health():
         get_predictor()
     except Exception as e:
         ml_status = f"error: {str(e)}"
-        logger.error(f"ML error: {traceback.format_exc()}")
     
-    # Verificar base de datos
-    db_status = "ok"
+    # Verificar base de datos CON EL ERROR DETALLADO
+    db_status = "error"
     db_error = None
-    try:
-        # Mostrar qué configuración está usando
-        logger.info(f"Intentando conectar a DB: host={os.getenv('DB_HOST', 'localhost')}, db={os.getenv('DB_NAME', 'vetpredict')}")
-        query_one("SELECT 1")
-    except Exception as e:
-        db_status = "error"
-        db_error = str(e)
-        logger.error(f"DB error: {traceback.format_exc()}")
+    db_config_check = {}
     
-    # Verificar variables de entorno (sin mostrar passwords)
-    db_vars = {
-        "DB_HOST": os.getenv("DB_HOST"),
-        "DB_PORT": os.getenv("DB_PORT"),
-        "DB_USER": os.getenv("DB_USER"),
-        "DB_NAME": os.getenv("DB_NAME"),
-        "DB_PASSWORD_SET": "yes" if os.getenv("DB_PASSWORD") else "no"
-    }
+    try:
+        # Mostrar qué configuración se está usando (sin passwords completas)
+        for key in ["host", "port", "user", "database"]:
+            db_config_check[key] = DB_CONFIG.get(key)
+        db_config_check["password_set"] = "yes" if DB_CONFIG.get("password") else "no"
+        
+        # Intentar conexión
+        conn = mysql.connector.connect(**DB_CONFIG)
+        conn.close()
+        db_status = "ok"
+    except mysql.connector.Error as e:
+        db_error = f"MySQL Error {e.errno}: {e.msg}"
+    except Exception as e:
+        db_error = str(e)
     
     return {
         "database": db_status,
         "modelo_ml": ml_status,
         "db_error": db_error,
-        "db_config_used": db_vars
+        "db_config": db_config_check
     }
 
 # ── Auth ──────────────────────────────────────────────────────
