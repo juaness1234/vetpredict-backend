@@ -24,6 +24,9 @@ DB_CONFIG = {
     "autocommit": False,
 }
 
+print("=== DATABASE.PY NUEVO ===")
+print("[DB CONFIG]", DB_CONFIG)
+
 print("[DB CONFIG]", DB_CONFIG)
 
 
