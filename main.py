@@ -36,9 +36,13 @@ logger = logging.getLogger("vetpredict")
 
 limiter = Limiter(key_func=get_remote_address, default_limits=["200/minute"])
 
-app = FastAPI(title="VetPredict API", version="5.0.0",
-    docs_url="/docs" if os.getenv("ENV") == "development" else None,
-    redoc_url=None)
+app = FastAPI(
+    title="VetPredict API",
+    version="5.0.0",
+    docs_url="/docs",
+    redoc_url="/redoc"
+)
+    
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
