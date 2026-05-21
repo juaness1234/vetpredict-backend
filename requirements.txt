@@ -5,9 +5,8 @@ pydantic[email]==2.9.2
 PyJWT==2.9.0
 bcrypt==4.2.0
 mysql-connector-python==9.1.0
-scikit-learn==1.5.2
+scikit-learn==1.6.1
 numpy==2.1.2
 joblib==1.4.2
 python-dotenv==1.0.1
 slowapi==0.1.9
-scikit-learn>=1.8.0
