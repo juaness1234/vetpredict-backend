@@ -3,14 +3,13 @@ auth.py — JWT + bcrypt para Python 3.13
 """
 import os, datetime
 from dotenv import load_dotenv
-
 import jwt
 import bcrypt
 from fastapi import HTTPException, Depends
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from database import query_one
 
-load_dotenv(override=False)
+load_dotenv()
 
 SECRET     = os.getenv("JWT_SECRET", "cambiar-en-produccion")
 ALGORITHM  = "HS256"
