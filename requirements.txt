@@ -9,4 +9,4 @@ pydantic[email]==2.11.4
 scikit-learn==1.8.0
 pandas==2.2.3
 numpy==2.2.5
-slowapi==0.1.9
+slowapi==0.1.9PyJWT==2.10.1 
