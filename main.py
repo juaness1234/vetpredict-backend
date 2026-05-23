@@ -440,23 +440,43 @@ async def forgot_password(request: Request, body: ForgotIn):
     from password_reset import enviar_codigo_reset
     user = query_one("SELECT id, nombre FROM usuarios WHERE email=%s AND activo=1",
                      (body.email.lower().strip(),))
-    
     if not user:
         raise HTTPException(404, "No existe una cuenta con ese correo.")
-    
     try:
         codigo = enviar_codigo_reset(body.email, user['nombre'])
         expira = datetime.datetime.utcnow() + datetime.timedelta(minutes=15)
-        _reset_codes[body.email.lower()] = {
-            "hash":   _hl.sha256(codigo.encode()).hexdigest(),
-            "expira": expira,
-        }
+        # Guardar en BD en lugar de memoria
+        execute("DELETE FROM password_reset_codes WHERE email=%s", (body.email.lower(),))
+        execute("INSERT INTO password_reset_codes (email, codigo_hash, expira_en) VALUES (%s,%s,%s)",
+                (body.email.lower(), _hl.sha256(codigo.encode()).hexdigest(), expira))
         logger.info(f"[RESET] Código enviado a {body.email}")
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"[RESET] Error SendGrid: {e}")
         raise HTTPException(500, "Error al enviar el correo. Intenta más tarde.")
-    
     return {"message": "Código enviado. Revisa tu bandeja de entrada."}
+
+@app.post("/api/auth/reset-password")
+@limiter.limit("5/minute")
+async def reset_password(request: Request, body: ResetIn):
+    email = body.email.lower().strip()
+    entry = query_one("SELECT * FROM password_reset_codes WHERE email=%s", (email,))
+    if not entry:
+        raise HTTPException(400, "Código inválido o expirado.")
+    if datetime.datetime.utcnow() > entry["expira_en"]:
+        execute("DELETE FROM password_reset_codes WHERE email=%s", (email,))
+        raise HTTPException(400, "El código ha expirado. Solicita uno nuevo.")
+    if _hl.sha256(body.codigo.encode()).hexdigest() != entry["codigo_hash"]:
+        raise HTTPException(400, "Código incorrecto.")
+    user = query_one("SELECT id FROM usuarios WHERE email=%s", (email,))
+    if not user:
+        raise HTTPException(404, "Usuario no encontrado.")
+    execute("UPDATE usuarios SET password_hash=%s WHERE id=%s",
+            (hash_password(body.password_nuevo), user["id"]))
+    execute("DELETE FROM password_reset_codes WHERE email=%s", (email,))
+    logger.info(f"[RESET] Contraseña restablecida para {email}")
+    return {"message": "Contraseña restablecida correctamente. Ya puedes iniciar sesión."}
 
 @app.get("/api/seguimientos/{cid}")
 async def listar_seg(cid: int, current=Depends(get_secure_user)):
