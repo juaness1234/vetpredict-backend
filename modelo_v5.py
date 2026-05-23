@@ -658,43 +658,41 @@ class DiseasePredictor:
                     "total":    len(ORDEN_PREGUNTAS),
                 }
 
-       # Todas respondidas — hacer predicción
-sintoma_ids = [
-    sid for sid, nombre in SINTOMA_ID_MAP.items()
-    if respuestas.get(nombre, False)
-]
+   # Todas respondidas — hacer predicción
+        sintoma_ids = [
+            sid for sid, nombre in SINTOMA_ID_MAP.items()
+            if respuestas.get(nombre, False)
+        ]
 
-# ← AGREGAR ESTO
-if len(sintoma_ids) == 0:
-    return {
-        "tipo": "diagnostico",
-        "enfermedad": "Sin síntomas detectados",
-        "nivel_riesgo": "bajo",
-        "confianza": 0.0,
-        "probabilidades": {},
-        "sintomas_usados": [],
-        "recomendacion": {
-            "urgencia": "✅ Tu perro parece estar sano",
-            "descripcion": "No se detectaron síntomas relevantes. Si tienes dudas, consulta a un veterinario de rutina.",
-            "que_hacer": [
-                "Continúa con las vacunas y desparasitación al día",
-                "Revisión veterinaria anual de rutina",
-                "Mantén una dieta equilibrada y ejercicio regular"
-            ],
-            "casero": [
-                "Agua fresca siempre disponible",
-                "Ejercicio diario según la raza",
-                "Revisión de pelaje y orejas semanalmente"
-            ],
-            "medicamentos_comunes": "No se requiere medicación.",
-            "prevencion": "Vacunación y desparasitación regular."
-        }
-    }
+        if len(sintoma_ids) == 0:
+            return {
+                "tipo": "diagnostico",
+                "enfermedad": "Sin síntomas detectados",
+                "nivel_riesgo": "bajo",
+                "confianza": 0.0,
+                "probabilidades": {},
+                "sintomas_usados": [],
+                "recomendacion": {
+                    "urgencia": "✅ Tu perro parece estar sano",
+                    "descripcion": "No se detectaron síntomas relevantes. Consulta a un veterinario de rutina si tienes dudas.",
+                    "que_hacer": [
+                        "Continúa con las vacunas y desparasitación al día",
+                        "Revisión veterinaria anual de rutina",
+                        "Mantén una dieta equilibrada y ejercicio regular"
+                    ],
+                    "casero": [
+                        "Agua fresca siempre disponible",
+                        "Ejercicio diario según la raza",
+                        "Revisión de pelaje y orejas semanalmente"
+                    ],
+                    "medicamentos_comunes": "No se requiere medicación.",
+                    "prevencion": "Vacunación y desparasitación regular."
+                }
+            }
 
-resultado = self.predict(sintoma_ids)
-resultado["tipo"] = "diagnostico"
-return resultado
-
+        resultado = self.predict(sintoma_ids)
+        resultado["tipo"] = "diagnostico"
+        return resultado
 
 # ── Instancia global ──────────────────────────────────────────
 _predictor = None
