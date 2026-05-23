@@ -455,27 +455,30 @@ async def forgot_password(request: Request, body: ForgotIn):
             raise HTTPException(500, "Error al enviar el correo. Intenta más tarde.")
     return {"message": "Si el correo existe, recibirás un código en tu bandeja de entrada."}
 
-@app.post("/api/auth/reset-password")
-@limiter.limit("5/minute")
-async def reset_password(request: Request, body: ResetIn):
-    email = body.email.lower().strip()
-    entry = _reset_codes.get(email)
-    if not entry:
-        raise HTTPException(400, "Código inválido o expirado.")
-    if datetime.datetime.utcnow() > entry["expira"]:
-        _reset_codes.pop(email, None)
-        raise HTTPException(400, "El código ha expirado. Solicita uno nuevo.")
-    if _hl.sha256(body.codigo.encode()).hexdigest() != entry["hash"]:
-        raise HTTPException(400, "Código incorrecto.")
-    user = query_one("SELECT id FROM usuarios WHERE email=%s", (email,))
-    if not user:
-        raise HTTPException(404, "Usuario no encontrado.")
-    execute("UPDATE usuarios SET password_hash=%s WHERE id=%s",
-            (hash_password(body.password_nuevo), user["id"]))
-    _reset_codes.pop(email, None)
-    logger.info(f"[RESET] Contraseña restablecida para {email}")
-    return {"message": "Contraseña restablecida correctamente. Ya puedes iniciar sesión."}
+@app.post("/api/auth/forgot-password")
+@limiter.limit("3/minute")
+async def forgot_password(request: Request, body: ForgotIn):
+    from password_reset import enviar_codigo_reset
+    user = query_one("SELECT id, nombre FROM usuarios WHERE email=%s AND activo=1",
+                     (body.email.lower().strip(),))
     
+    if not user:
+        raise HTTPException(404, "No existe una cuenta con ese correo.")
+    
+    try:
+        codigo = enviar_codigo_reset(body.email, user['nombre'])
+        expira = datetime.datetime.utcnow() + datetime.timedelta(minutes=15)
+        _reset_codes[body.email.lower()] = {
+            "hash":   _hl.sha256(codigo.encode()).hexdigest(),
+            "expira": expira,
+        }
+        logger.info(f"[RESET] Código enviado a {body.email}")
+    except Exception as e:
+        logger.error(f"[RESET] Error SendGrid: {e}")
+        raise HTTPException(500, "Error al enviar el correo. Intenta más tarde.")
+    
+    return {"message": "Código enviado. Revisa tu bandeja de entrada."}
+
 @app.get("/api/seguimientos/{cid}")
 async def listar_seg(cid: int, current=Depends(get_secure_user)):
     return [serial(r) for r in query_all("SELECT * FROM seguimientos WHERE consulta_id=%s ORDER BY creado_en ASC", (cid,))]
