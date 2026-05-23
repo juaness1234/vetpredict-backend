@@ -440,27 +440,6 @@ async def forgot_password(request: Request, body: ForgotIn):
     from password_reset import enviar_codigo_reset
     user = query_one("SELECT id, nombre FROM usuarios WHERE email=%s AND activo=1",
                      (body.email.lower().strip(),))
-    # Siempre responder igual para no revelar si el email existe
-    if user:
-        try:
-            codigo = enviar_codigo_reset(body.email, user['nombre'])
-            expira = datetime.datetime.utcnow() + datetime.timedelta(minutes=15)
-            _reset_codes[body.email.lower()] = {
-                "hash":   _hl.sha256(codigo.encode()).hexdigest(),
-                "expira": expira,
-            }
-            logger.info(f"[RESET] Código enviado a {body.email}")
-        except Exception as e:
-            logger.error(f"[RESET] Error SendGrid: {e}")
-            raise HTTPException(500, "Error al enviar el correo. Intenta más tarde.")
-    return {"message": "Si el correo existe, recibirás un código en tu bandeja de entrada."}
-
-@app.post("/api/auth/forgot-password")
-@limiter.limit("3/minute")
-async def forgot_password(request: Request, body: ForgotIn):
-    from password_reset import enviar_codigo_reset
-    user = query_one("SELECT id, nombre FROM usuarios WHERE email=%s AND activo=1",
-                     (body.email.lower().strip(),))
     
     if not user:
         raise HTTPException(404, "No existe una cuenta con ese correo.")
